@@ -5,6 +5,7 @@ import { testConnection, syncDatabase } from './models';
 import authRoutes from './routes/auth';
 import applicationRoutes from './routes/applications';
 import teacherRoutes from './routes/teacher';
+import userConfigRoutes from './routes/user-configs';
 import bcrypt from 'bcryptjs';
 import { User } from './models';
 
@@ -22,6 +23,7 @@ app.use('/uploads', express.static(config.upload.dir));
 app.use('/api/auth', authRoutes);
 app.use('/api/applications', applicationRoutes);
 app.use('/api/teacher', teacherRoutes);
+app.use('/api/user-configs', userConfigRoutes);
 
 // 健康检查
 app.get('/health', (req, res) => {
@@ -65,8 +67,9 @@ const initializeApp = async () => {
     }
 
     // 启动服务器
-    app.listen(config.port, () => {
+    app.listen(config.port, '0.0.0.0', () => {
       console.log(`服务器运行在 http://localhost:${config.port}`);
+      console.log(`局域网访问地址：http://192.168.30.230:${config.port}`);
       console.log(`环境：${config.nodeEnv}`);
     });
   } catch (error) {

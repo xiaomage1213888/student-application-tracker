@@ -4,10 +4,16 @@
       <template #header>
         <div class="card-header">
           <span>投递统计</span>
-          <el-button type="primary" @click="goToApplications">
-            <el-icon><Plus /></el-icon>
-            新增投递
-          </el-button>
+          <div class="header-actions">
+            <el-button @click="goToApplications">
+              <el-icon><List /></el-icon>
+              查看投递记录
+            </el-button>
+            <el-button type="primary" @click="goToApplicationsWithAdd">
+              <el-icon><Plus /></el-icon>
+              新增投递
+            </el-button>
+          </div>
         </div>
       </template>
       <el-row :gutter="20">
@@ -82,6 +88,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import * as echarts from 'echarts'
 import type { ECharts } from 'echarts'
+import { Document, SuccessFilled, VideoPlay, List, Plus } from '@element-plus/icons-vue'
 import applicationApi from '@/api/application'
 import type { Statistics } from '@/types'
 
@@ -108,6 +115,10 @@ const interviewCount = computed(() => statistics.value.statusCount['面试中'] 
 
 const goToApplications = () => {
   router.push('/applications')
+}
+
+const goToApplicationsWithAdd = () => {
+  router.push('/applications?add=true')
 }
 
 const fetchStatistics = async () => {

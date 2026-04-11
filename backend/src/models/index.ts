@@ -2,6 +2,7 @@ import sequelize, { testConnection } from '../config/database';
 import User from './User';
 import AuthorizedStudent from './AuthorizedStudent';
 import Application from './Application';
+import UserConfig from './UserConfig';
 
 // 定义关联关系
 User.hasMany(Application, {
@@ -26,6 +27,18 @@ AuthorizedStudent.belongsTo(User, {
   as: 'manager',
 });
 
+// 用户可以有多个配置
+User.hasMany(UserConfig, {
+  foreignKey: 'userId',
+  as: 'configs',
+  onDelete: 'CASCADE',
+});
+
+UserConfig.belongsTo(User, {
+  foreignKey: 'userId',
+  as: 'user',
+});
+
 // 同步数据库
 export const syncDatabase = async () => {
   try {
@@ -37,6 +50,6 @@ export const syncDatabase = async () => {
   }
 };
 
-export { User, AuthorizedStudent, Application };
+export { User, AuthorizedStudent, Application, UserConfig };
 export { testConnection } from '../config/database';
 export default sequelize;
