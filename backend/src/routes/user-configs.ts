@@ -1,11 +1,11 @@
 import express from 'express';
 import { UserConfig } from '../models';
-import { authenticate } from '../middleware/auth';
+import { authenticate, AuthRequest } from '../middleware/auth';
 
 const router = express.Router();
 
 // 获取用户配置
-router.get('/', authenticate, async (req, res) => {
+router.get('/', authenticate, async (req: AuthRequest, res) => {
   try {
     const userId = req.user!.id;
     const configs = await UserConfig.findAll({
@@ -25,7 +25,7 @@ router.get('/', authenticate, async (req, res) => {
 });
 
 // 保存用户配置
-router.post('/', authenticate, async (req, res) => {
+router.post('/', authenticate, async (req: AuthRequest, res) => {
   try {
     const userId = req.user!.id;
     const { key, value } = req.body;
@@ -69,7 +69,7 @@ router.post('/', authenticate, async (req, res) => {
 });
 
 // 删除用户配置
-router.delete('/:id', authenticate, async (req, res) => {
+router.delete('/:id', authenticate, async (req: AuthRequest, res) => {
   try {
     const userId = req.user!.id;
     const configId = parseInt(req.params.id);

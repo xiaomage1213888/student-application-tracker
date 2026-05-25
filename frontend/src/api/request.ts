@@ -38,15 +38,23 @@ class Request {
       },
       (error) => {
         if (error.response) {
-          const { status, data } = error.response
-          
-          if (status === 401) {
+          const { status, data, config } = error.response
+          const url: string = config?.url || ''
+
+          // 登录/注册接口本身的 401 不是 token 过期，而是用户名密码错
+          const isAuthEntry = /\/auth\/(login|register)$/.test(url)
+
+          if (status === 401 && !isAuthEntry) {
+            const hasToken = !!localStorage.getItem('token')
             localStorage.removeItem('token')
-            ElMessage.error('登录已过期，请重新登录')
-            // 延迟跳转到登录页
-            setTimeout(() => {
-              window.location.href = '/login'
-            }, 1000)
+            // 已经在登录页就不再弹提示和跳转，避免反复打扰
+            const onLoginPage = window.location.pathname.startsWith('/login')
+            if (!onLoginPage) {
+              ElMessage.error(hasToken ? '登录已过期，请重新登录' : '请先登录')
+              setTimeout(() => {
+                window.location.href = '/login'
+              }, 800)
+            }
           } else {
             ElMessage.error(data?.message || '请求失败')
           }

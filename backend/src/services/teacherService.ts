@@ -20,15 +20,17 @@ export class TeacherService {
             className: student.className,
           },
           defaults: {
+            name: student.name,
+            className: student.className,
             isUsed: false,
-          },
+          } as any,
           transaction,
         });
 
         if (!created) {
           // 如果已存在，更新为未使用状态（允许重新导入）
           await record.update(
-            { isUsed: false, usedByUserId: null },
+            { isUsed: false, usedByUserId: null } as any,
             { transaction }
           );
         }

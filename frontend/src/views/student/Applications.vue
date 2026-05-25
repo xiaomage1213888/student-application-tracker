@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="applications-container">
     <el-card>
       <template #header>
@@ -31,20 +31,28 @@
         border
         class="editable-table"
         :header-cell-style="{ 'user-select': 'none' }"
+        :span-method="spanMethod"
+        :row-class-name="rowClassName"
         @header-dragend="handleHeaderDragend"
         @row-contextmenu="handleRowContextMenu"
+        @row-click="handleRowClick"
       >
-        <el-table-column type="index" label="#" width="50" />
-        
-        <el-table-column label="公司" min-width="180" resizable>
-          <template #default="{ row }">
+        <el-table-column label="#" width="50" align="center">
+          <template #default="{ row, $index }">
             <template v-if="row.isAddRow">
-              <div class="add-row-cell" @click="handleAddRow">
-                <el-icon class="add-icon"><Plus /></el-icon>
-                <span>添加新记录</span>
+              <div class="add-row-trigger">
+                <el-icon><Plus /></el-icon>
               </div>
             </template>
             <template v-else>
+              {{ $index + 1 }}
+            </template>
+          </template>
+        </el-table-column>
+        
+        <el-table-column label="公司" min-width="180" resizable>
+          <template #default="{ row }">
+            <template v-if="!row.isAddRow">
               <editable-cell 
                 :value="row.company" 
                 :row="row" 
@@ -57,10 +65,7 @@
         
         <el-table-column label="岗位" min-width="150" resizable>
           <template #default="{ row }">
-            <template v-if="row.isAddRow">
-              <div class="add-row-cell" @click="handleAddRow"></div>
-            </template>
-            <template v-else>
+            <template v-if="!row.isAddRow">
               <editable-select-cell 
                 :value="row.position" 
                 :row="row" 
@@ -74,10 +79,7 @@
         
         <el-table-column label="投递时间" width="120" resizable>
           <template #default="{ row }">
-            <template v-if="row.isAddRow">
-              <div class="add-row-cell" @click="handleAddRow"></div>
-            </template>
-            <template v-else>
+            <template v-if="!row.isAddRow">
               <editable-date-cell 
                 :value="row.applicationDate" 
                 :row="row" 
@@ -90,10 +92,7 @@
         
         <el-table-column label="渠道" width="120" resizable>
           <template #default="{ row }">
-            <template v-if="row.isAddRow">
-              <div class="add-row-cell" @click="handleAddRow"></div>
-            </template>
-            <template v-else>
+            <template v-if="!row.isAddRow">
               <editable-select-cell 
                 :value="row.channel" 
                 :row="row" 
@@ -107,10 +106,7 @@
         
         <el-table-column label="类型" width="100" resizable>
           <template #default="{ row }">
-            <template v-if="row.isAddRow">
-              <div class="add-row-cell" @click="handleAddRow"></div>
-            </template>
-            <template v-else>
+            <template v-if="!row.isAddRow">
               <editable-select-cell 
                 :value="row.type" 
                 :row="row" 
@@ -124,10 +120,7 @@
         
         <el-table-column label="进展" width="120" resizable>
           <template #default="{ row }">
-            <template v-if="row.isAddRow">
-              <div class="add-row-cell" @click="handleAddRow"></div>
-            </template>
-            <template v-else>
+            <template v-if="!row.isAddRow">
               <editable-select-cell 
                 :value="row.status" 
                 :row="row" 
@@ -145,10 +138,7 @@
         
         <el-table-column label="地点" width="100" resizable>
           <template #default="{ row }">
-            <template v-if="row.isAddRow">
-              <div class="add-row-cell" @click="handleAddRow"></div>
-            </template>
-            <template v-else>
+            <template v-if="!row.isAddRow">
               <editable-select-cell 
                 :value="row.location" 
                 :row="row" 
@@ -162,26 +152,22 @@
         
         <el-table-column label="重视度" width="100" resizable>
           <template #default="{ row }">
-            <template v-if="row.isAddRow">
-              <div class="add-row-cell" @click="handleAddRow"></div>
-            </template>
-            <template v-else>
-              <el-rate 
-                v-model="row.priority" 
-                :colors="['#99A9BF', '#F7BA2A', '#FF9900']"
-                @change="handlePriorityChange(row)"
-                style="font-size: 14px"
-              />
+            <template v-if="!row.isAddRow">
+              <div class="rate-cell">
+                <el-rate
+                  v-model="row.priority"
+                  :colors="['#99A9BF', '#F7BA2A', '#FF9900']"
+                  @change="handlePriorityChange(row)"
+                  style="font-size: 14px"
+                />
+              </div>
             </template>
           </template>
         </el-table-column>
         
         <el-table-column label="备注" min-width="200" resizable>
           <template #default="{ row }">
-            <template v-if="row.isAddRow">
-              <div class="add-row-cell" @click="handleAddRow"></div>
-            </template>
-            <template v-else>
+            <template v-if="!row.isAddRow">
               <editable-cell 
                 :value="row.remarks" 
                 :row="row" 
@@ -732,6 +718,30 @@ onUnmounted(() => {
   document.removeEventListener('click', closeContextMenu)
 })
 
+// 合并添加行的所有列为一个单元格
+const spanMethod = ({ row, columnIndex }: { row: any; column: any; rowIndex: number; columnIndex: number }) => {
+  if (row.isAddRow) {
+    if (columnIndex === 0) {
+      return { rowspan: 1, colspan: 10 }  // 合并所有列
+    } else {
+      return { rowspan: 0, colspan: 0 }   // 隐藏其余列
+    }
+  }
+  return { rowspan: 1, colspan: 1 }
+}
+
+// 添加行的行样式
+const rowClassName = ({ row }: { row: any }) => {
+  return row.isAddRow ? 'add-row' : ''
+}
+
+// 行点击事件（用于添加行）
+const handleRowClick = (row: any) => {
+  if (row.isAddRow) {
+    handleAddRow()
+  }
+}
+
 const getStatusType = (status: string) => {
   const typeMap: Record<string, any> = {
     '已投递/未处理': 'info',
@@ -772,61 +782,16 @@ const getStatusType = (status: string) => {
   font-size: 13px;
 }
 
-/* 表格样式优化 */
-.editable-table :deep(.el-table__cell) {
-  padding: 0;
-}
+/* -----------------------------------------------------------
+ * 表格样式：所有 cell 级别样式统一在 src/styles/editable-table.css
+ * 这里只放本视图特有的：右键菜单、添加行、对话框等
+ * ----------------------------------------------------------- */
 
-.editable-table :deep(.el-table__body tr) {
-  height: 40px;
-}
-
-/* 编辑时输入框占据整个单元格 */
-.editable-table :deep(.editable-cell),
-.editable-table :deep(.editable-select-cell),
-.editable-table :deep(.editable-date-cell) {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-}
-
-/* 输入框样式 */
-.editable-table :deep(.editing-input .el-input__wrapper),
-.editable-table :deep(.editing-select .el-select__wrapper),
-.editable-table :deep(.editing-date .el-input__wrapper) {
-  box-shadow: none;
-  border-radius: 0;
-  padding: 0 8px;
-}
-
-/* 文本域样式 */
-.editable-table :deep(.editing-textarea) {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 10;
-}
-
-.editable-table :deep(.editing-textarea .el-textarea__inner) {
-  box-shadow: none;
-  border-radius: 0;
-  padding: 8px;
-}
-
-/* 列宽拖动样式 */
-.editable-table :deep(.el-table__header th) {
-  position: relative;
-  user-select: none;
-}
-
-/* 确保列可以调整宽度 */
+/* 列宽拖动把手 */
 .editable-table :deep(.el-table__header .el-table__cell) {
   overflow: visible;
-  cursor: default;
 }
 
-/* 拖动把手区域 */
 .editable-table :deep(.el-table__header .el-table__cell:hover::after) {
   content: '';
   position: absolute;
@@ -838,13 +803,12 @@ const getStatusType = (status: string) => {
   background-color: transparent;
 }
 
-/* 拖动时的样式 */
 .editable-table :deep(.el-table__header .el-table__cell.el-table__cell--resizing:hover::after) {
   background-color: #409eff;
   opacity: 0.5;
 }
 
-/* 右键菜单样式 */
+/* 右键菜单 */
 .context-menu {
   position: fixed;
   background: #fff;
@@ -876,31 +840,47 @@ const getStatusType = (status: string) => {
   font-size: 16px;
 }
 
-/* 添加行按钮样式 */
-.add-row-cell {
+/* 重视度（rate）单元格——保持 cell-root 的 padding 一致 */
+.rate-cell {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  box-sizing: border-box;
+}
+
+/* 添加行：飞书风格，整行一体 */
+.editable-table :deep(.add-row td) {
+  border-right: none !important;
+}
+
+.editable-table :deep(.add-row:hover td) {
+  background-color: #f5f7fa !important;
+}
+
+.add-row-trigger {
   width: 100%;
   height: 100%;
   min-height: 40px;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  padding: 0 10px;
+  padding: 0 16px;
   box-sizing: border-box;
   cursor: pointer;
-  color: #409eff;
-  transition: all 0.3s ease;
-}
-
-.add-row-cell:hover {
-  background-color: #ecf5ff;
-}
-
-.add-icon {
-  margin-right: 8px;
+  color: #c0c4cc;
   font-size: 16px;
 }
 
-/* 预设值管理对话框样式 */
+.add-row-trigger:hover {
+  color: #409eff;
+}
+
+.editable-table :deep(.add-row) {
+  cursor: pointer;
+}
+
+/* 预设值管理对话框 */
 .preset-manager {
   padding: 10px 0;
 }

@@ -98,15 +98,14 @@ export class AuthService {
 
   // 生成 JWT token
   private static generateToken(user: User): string {
-    return jwt.sign(
-      {
-        id: user.id,
-        username: user.username,
-        role: user.role,
-      },
-      config.jwt.secret,
-      { expiresIn: config.jwt.expiresIn }
-    );
+    const payload = {
+      id: user.id,
+      username: user.username,
+      role: user.role,
+    };
+    return jwt.sign(payload, config.jwt.secret, {
+      expiresIn: config.jwt.expiresIn,
+    } as jwt.SignOptions);
   }
 
   // 获取当前用户信息

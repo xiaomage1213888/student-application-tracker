@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
 import config from './config';
 import { testConnection, syncDatabase } from './models';
 import authRoutes from './routes/auth';
@@ -30,13 +31,24 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// 404 处理
-app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    message: '接口不存在',
+// 生产环境：托管前端静态文件
+if (config.nodeEnv === 'production') {
+  const frontendDist = path.join(__dirname, '../../frontend/dist');
+  app.use(express.static(frontendDist));
+
+  // 所有非 API 路由返回 index.html（支持 Vue Router history 模式）
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(frontendDist, 'index.html'));
   });
-});
+} else {
+  // 开发环境 404 处理
+  app.use((req: any, res: any) => {
+    res.status(404).json({
+      success: false,
+      message: '接口不存在',
+    });
+  });
+}
 
 // 错误处理
 app.use((err: any, req: any, res: any, next: any) => {
@@ -68,9 +80,12 @@ const initializeApp = async () => {
 
     // 启动服务器
     app.listen(config.port, '0.0.0.0', () => {
-      console.log(`服务器运行在 http://localhost:${config.port}`);
-      console.log(`局域网访问地址：http://192.168.30.230:${config.port}`);
-      console.log(`环境：${config.nodeEnv}`);
+      console.log(`\n========================================`);
+      console.log(`  学生投递记录管理系统已启动`);
+      console.log(`  环境：${config.nodeEnv}`);
+      console.log(`  本机访问：http://localhost:${config.port}`);
+      console.log(`  局域网访问：http://192.168.30.230:${config.port}`);
+      console.log(`========================================\n`);
     });
   } catch (error) {
     console.error('启动失败:', error);
