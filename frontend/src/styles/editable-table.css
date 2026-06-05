@@ -307,3 +307,21 @@
   padding: 0 12px;
   box-sizing: border-box;
 }
+
+/* ==================== 7. 修复下拉菜单样式 ==================== */
+/* Element Plus 2.x 用 .is-hovering 类（由 JS 控制）实现 hover 效果 */
+/* teleported=true（默认）时下拉菜单传送到 body，需要全局覆盖 */
+
+.el-select-dropdown__item.is-hovering {
+  background-color: #f5f7fa !important;
+}
+
+.el-select-dropdown__item.is-selected {
+  color: #409eff !important;
+  font-weight: 600;
+}
+
+/* 兼容旧版类名 */
+.el-select-dropdown__item:hover {
+  background-color: #f5f7fa !important;
+}

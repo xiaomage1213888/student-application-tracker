@@ -17,14 +17,13 @@
       v-model="editValue"
       class="cell-editor"
       filterable
-      :teleported="true"
       placeholder="请选择"
       @change="onChange"
       @visible-change="onVisibleChange"
       @keyup.escape="cancel"
     >
       <el-option
-        v-for="opt in options"
+        v-for="opt in uniqueOptions"
         :key="opt"
         :label="opt"
         :value="opt"
@@ -57,6 +56,22 @@ const selectRef = ref<SelectInstance>()
 const hasValue = computed(
   () => props.value !== undefined && props.value !== null && props.value !== ''
 )
+
+// 防御性去重：无论上游传入什么，组件内部强制去重，避免 Element Plus
+// 因为相同 value 的 el-option 重复注册导致 hover 高亮失效（先注册的 DOM
+// 在 states.options Map 中被后注册的覆盖，is-hovering 类无法添加上去）
+const uniqueOptions = computed(() => {
+  const seen = new Set<string>()
+  const result: string[] = []
+  for (const opt of props.options) {
+    const key = String(opt)
+    if (!seen.has(key)) {
+      seen.add(key)
+      result.push(opt)
+    }
+  }
+  return result
+})
 
 const startEdit = () => {
   if (isEditing.value) return
